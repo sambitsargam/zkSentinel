@@ -1,19 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { WalletConnect } from '../WalletConnect';
 
 // Mock the useWallet hook
-const mockUseWallet = {
-  address: null,
+let mockUseWallet = {
+  address: null as string | null,
   stableBalance: 0n,
   volatileBalance: 0n,
   isConnected: false,
   isConnecting: false,
-  error: null,
-  connectWallet: () => {},
-  disconnectWallet: () => {},
+  error: null as string | null,
+  connectWallet: vi.fn(),
+  disconnectWallet: vi.fn(),
   formatBalance: (balance: bigint) => (Number(balance) / 1e18).toFixed(4),
 };
 
@@ -23,6 +23,24 @@ vi.mock('../../../hooks/useWallet', () => ({
 }));
 
 describe('Wallet Connection Property Tests', () => {
+  beforeEach(() => {
+    // Clean up DOM before each test
+    cleanup();
+    
+    // Reset mock before each test
+    mockUseWallet = {
+      address: null,
+      stableBalance: 0n,
+      volatileBalance: 0n,
+      isConnected: false,
+      isConnecting: false,
+      error: null,
+      connectWallet: vi.fn(),
+      disconnectWallet: vi.fn(),
+      formatBalance: (balance: bigint) => (Number(balance) / 1e18).toFixed(4),
+    };
+  });
+
   /**
    * Property 1: Wallet Connection State Display
    * Validates: Requirements 1.2, 1.3
@@ -32,39 +50,36 @@ describe('Wallet Connection Property Tests', () => {
   it('Feature: zk-sentinel, Property 1: For any successfully connected wallet with balances, the Dashboard SHALL display the wallet address, stable balance, and volatile balance', () => {
     fc.assert(
       fc.property(
-        // Generate random wallet addresses (42 chars, starts with 0x)
-        fc.string({ minLength: 40, maxLength: 40 }).map(s => '0x' + s),
+        // Generate random wallet addresses (40 hex chars after 0x) - avoid all zeros
+        fc.hexaString({ minLength: 40, maxLength: 40 })
+          .filter(s => s !== '0000000000000000000000000000000000000000')
+          .map(s => '0x' + s),
         // Generate random balances (up to 1000 ETH equivalent)
         fc.bigInt({ min: 1n, max: 1000n * 10n ** 18n }),
         fc.bigInt({ min: 1n, max: 1000n * 10n ** 18n }),
         (address, stableBalance, volatileBalance) => {
-          // Mock connected wallet state
-          const mockConnectedWallet = {
-            ...mockUseWallet,
-            address,
-            stableBalance,
-            volatileBalance,
-            isConnected: true,
-          };
+          // Update mock state for connected wallet
+          mockUseWallet.address = address;
+          mockUseWallet.stableBalance = stableBalance;
+          mockUseWallet.volatileBalance = volatileBalance;
+          mockUseWallet.isConnected = true;
 
-          // Override the mock for this test
-          vi.mocked(mockUseWallet).address = address;
-          vi.mocked(mockUseWallet).stableBalance = stableBalance;
-          vi.mocked(mockUseWallet).volatileBalance = volatileBalance;
-          vi.mocked(mockUseWallet).isConnected = true;
+          const { container } = render(React.createElement(WalletConnect));
 
-          render(<WalletConnect />);
-
-          // Verify all three components are displayed
-          expect(screen.getByText(address)).toBeInTheDocument();
+          // Verify all three components are displayed using more specific queries
+          expect(container.querySelector('.text-sm.font-mono')?.textContent).toBe(address);
           expect(screen.getByText(/Stable Balance/)).toBeInTheDocument();
           expect(screen.getByText(/Volatile Balance/)).toBeInTheDocument();
           
           // Verify balance values are displayed
-          const stableText = mockConnectedWallet.formatBalance(stableBalance);
-          const volatileText = mockConnectedWallet.formatBalance(volatileBalance);
+          const stableText = mockUseWallet.formatBalance(stableBalance);
+          const volatileText = mockUseWallet.formatBalance(volatileBalance);
           expect(screen.getByText(new RegExp(stableText))).toBeInTheDocument();
           expect(screen.getByText(new RegExp(volatileText))).toBeInTheDocument();
+
+          // Verify connected status indicator
+          expect(screen.getByText('Connected')).toBeInTheDocument();
+          expect(screen.getByText('Wallet Connected')).toBeInTheDocument();
         }
       ),
       { numRuns: 100 }
@@ -79,39 +94,74 @@ describe('Wallet Connection Property Tests', () => {
   it('Feature: zk-sentinel, Property 2: For any connected wallet, disconnecting then reconnecting SHALL restore the connection state', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 40, maxLength: 40 }).map(s => '0x' + s),
+        fc.hexaString({ minLength: 40, maxLength: 40 })
+          .filter(s => s !== '0000000000000000000000000000000000000000')
+          .map(s => '0x' + s),
         fc.bigInt({ min: 1n, max: 1000n * 10n ** 18n }),
         fc.bigInt({ min: 1n, max: 1000n * 10n ** 18n }),
         (address, stableBalance, volatileBalance) => {
-          // Initial connected state
+          // Step 1: Set up initial connected state
+          mockUseWallet.address = address;
+          mockUseWallet.stableBalance = stableBalance;
+          mockUseWallet.volatileBalance = volatileBalance;
+          mockUseWallet.isConnected = true;
+
+          // Store initial state for comparison
           const initialState = {
-            address,
-            stableBalance,
-            volatileBalance,
-            isConnected: true,
+            address: mockUseWallet.address,
+            stableBalance: mockUseWallet.stableBalance,
+            volatileBalance: mockUseWallet.volatileBalance,
+            isConnected: mockUseWallet.isConnected,
           };
 
-          // Simulate disconnect
-          const disconnectedState = {
-            address: null,
-            stableBalance: 0n,
-            volatileBalance: 0n,
-            isConnected: false,
-          };
+          // Render connected wallet
+          const { rerender } = render(React.createElement(WalletConnect));
+          
+          // Verify initial connected state is displayed
+          expect(container.querySelector('.text-sm.font-mono')?.textContent).toBe(address);
+          expect(screen.getByText('Connected')).toBeInTheDocument();
+          expect(screen.getByText('Disconnect Wallet')).toBeInTheDocument();
 
-          // Simulate reconnect (should restore state)
-          const reconnectedState = {
-            address,
-            stableBalance,
-            volatileBalance,
-            isConnected: true,
-          };
+          // Step 2: Simulate disconnection
+          mockUseWallet.address = null;
+          mockUseWallet.stableBalance = 0n;
+          mockUseWallet.volatileBalance = 0n;
+          mockUseWallet.isConnected = false;
 
-          // Verify round-trip property: initial -> disconnect -> reconnect = initial
-          expect(reconnectedState.address).toBe(initialState.address);
-          expect(reconnectedState.stableBalance).toBe(initialState.stableBalance);
-          expect(reconnectedState.volatileBalance).toBe(initialState.volatileBalance);
-          expect(reconnectedState.isConnected).toBe(initialState.isConnected);
+          // Re-render with disconnected state
+          rerender(React.createElement(WalletConnect));
+
+          // Verify disconnected state is displayed
+          expect(screen.queryByText(address)).not.toBeInTheDocument();
+          expect(screen.queryByText('Connected')).not.toBeInTheDocument();
+          expect(screen.getByText('Connect Your Wallet')).toBeInTheDocument();
+          expect(screen.getByText('Connect MetaMask')).toBeInTheDocument();
+
+          // Step 3: Simulate reconnection (restore original state)
+          mockUseWallet.address = initialState.address;
+          mockUseWallet.stableBalance = initialState.stableBalance;
+          mockUseWallet.volatileBalance = initialState.volatileBalance;
+          mockUseWallet.isConnected = initialState.isConnected;
+
+          // Re-render with reconnected state
+          rerender(React.createElement(WalletConnect));
+
+          // Step 4: Verify round-trip property - state is fully restored
+          expect(mockUseWallet.address).toBe(initialState.address);
+          expect(mockUseWallet.stableBalance).toBe(initialState.stableBalance);
+          expect(mockUseWallet.volatileBalance).toBe(initialState.volatileBalance);
+          expect(mockUseWallet.isConnected).toBe(initialState.isConnected);
+
+          // Verify UI displays restored state correctly
+          expect(screen.getByText(address)).toBeInTheDocument();
+          expect(screen.getByText('Connected')).toBeInTheDocument();
+          expect(screen.getByText('Wallet Connected')).toBeInTheDocument();
+          
+          // Verify balance values are restored and displayed
+          const stableText = mockUseWallet.formatBalance(stableBalance);
+          const volatileText = mockUseWallet.formatBalance(volatileBalance);
+          expect(screen.getByText(new RegExp(stableText))).toBeInTheDocument();
+          expect(screen.getByText(new RegExp(volatileText))).toBeInTheDocument();
         }
       ),
       { numRuns: 100 }

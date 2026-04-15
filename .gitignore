@@ -48,3 +48,4 @@ circuits/pot*
 *.log
 .vercel
 docs
+lib/__tests__

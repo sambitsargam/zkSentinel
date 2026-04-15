@@ -45,8 +45,6 @@ export function TransactionStatus({
         }
       }, 3000); // Poll every 3 seconds
 
-      setPollingInterval(interval);
-
       return () => {
         if (interval) clearInterval(interval);
       };
