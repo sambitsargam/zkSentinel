@@ -1,3 +1,9 @@
+// Run startup validation before building
+if (process.env.NODE_ENV !== 'test') {
+  const { runStartupValidation } = require('./lib/startup');
+  runStartupValidation();
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

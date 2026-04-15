@@ -47,3 +47,4 @@ circuits/pot*
 # Misc
 *.log
 .vercel
+docs
