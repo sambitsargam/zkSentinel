@@ -20,15 +20,15 @@ async function testCircuit() {
         // Generate witness and proof
         const { proof, publicSignals } = await snarkjs.groth16.fullProve(
             input1,
-            "circuits/build/risk_calculator_js/risk_calculator.wasm",
-            "circuits/build/risk_calculator_final.zkey"
+            "build/risk_calculator_js/risk_calculator.wasm",
+            "build/risk_calculator_final.zkey"
         );
 
         console.log("Generated Proof:", JSON.stringify(proof, null, 2));
         console.log("Public Signals:", publicSignals);
 
         // Verify the proof
-        const vKey = JSON.parse(fs.readFileSync("circuits/build/verification_key.json"));
+        const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
         const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
 
         console.log("Proof Verified:", verified);
@@ -56,15 +56,15 @@ async function testCircuit() {
         // Generate witness and proof
         const { proof, publicSignals } = await snarkjs.groth16.fullProve(
             input2,
-            "circuits/build/risk_calculator_js/risk_calculator.wasm",
-            "circuits/build/risk_calculator_final.zkey"
+            "build/risk_calculator_js/risk_calculator.wasm",
+            "build/risk_calculator_final.zkey"
         );
 
         console.log("Generated Proof:", JSON.stringify(proof, null, 2));
         console.log("Public Signals:", publicSignals);
 
         // Verify the proof
-        const vKey = JSON.parse(fs.readFileSync("circuits/build/verification_key.json"));
+        const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
         const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
 
         console.log("Proof Verified:", verified);
@@ -92,15 +92,15 @@ async function testCircuit() {
         // Generate witness and proof
         const { proof, publicSignals } = await snarkjs.groth16.fullProve(
             input3,
-            "circuits/build/risk_calculator_js/risk_calculator.wasm",
-            "circuits/build/risk_calculator_final.zkey"
+            "build/risk_calculator_js/risk_calculator.wasm",
+            "build/risk_calculator_final.zkey"
         );
 
         console.log("Generated Proof:", JSON.stringify(proof, null, 2));
         console.log("Public Signals:", publicSignals);
 
         // Verify the proof
-        const vKey = JSON.parse(fs.readFileSync("circuits/build/verification_key.json"));
+        const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
         const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
 
         console.log("Proof Verified:", verified);
