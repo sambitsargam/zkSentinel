@@ -105,7 +105,7 @@ export class ExecutionEngine {
       this.agenticWalletId = walletInfo.walletId;
       
       console.log('Agentic wallet created:', {
-        walletId: walletInfo.walletId,
+        walletId: this.agenticWalletId,
         address: walletInfo.address,
         teeSecured: walletInfo.teeSecured
       });

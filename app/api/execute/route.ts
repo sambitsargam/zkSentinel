@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     let body: ExecuteRequest;
     try {
       body = await request.json();
-    } catch (_error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON format' },
         { status: 400 }
@@ -194,7 +194,7 @@ function validateExecuteRequest(body: any): { isValid: boolean; error?: string }
       return { isValid: false, error: 'action.amount exceeds maximum supported value' };
     }
 
-  } catch (_error) {
+  } catch {
     return { isValid: false, error: 'action.amount must be a valid integer string' };
   }
 

@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     let body: AnalyzeRequest;
     try {
       body = await request.json();
-    } catch (_error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON format' },
         { status: 400 }
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
 
-  } catch (_error) {
-    console.error('Risk analysis failed:', _error);
+  } catch (error) {
+    console.error('Risk analysis failed:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
@@ -126,7 +126,7 @@ function validateAnalyzeRequest(body: any): { isValid: boolean; error?: string }
       return { isValid: false, error: 'volatileBalance exceeds maximum supported value' };
     }
 
-  } catch (_error) {
+  } catch {
     return { isValid: false, error: 'Invalid balance format - must be valid integer strings' };
   }
 

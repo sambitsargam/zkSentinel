@@ -191,7 +191,7 @@ Focus on the balance ratio in your reasoning and be specific about recommended a
     let functionArgs;
     try {
       functionArgs = JSON.parse(functionCall.function.arguments);
-    } catch (_error) {
+    } catch {
       throw new Error('Invalid OpenAI response: malformed function arguments');
     }
 

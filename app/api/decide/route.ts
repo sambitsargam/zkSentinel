@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     let body: DecideRequest;
     try {
       body = await request.json();
-    } catch (_error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON format' },
         { status: 400 }
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
 
-  } catch (_error) {
-    console.error('AI decision failed:', _error);
+  } catch (error) {
+    console.error('AI decision failed:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
@@ -120,7 +120,7 @@ function validateDecideRequest(body: any): { isValid: boolean; error?: string } 
       return { isValid: false, error: 'At least one balance must be greater than zero' };
     }
 
-  } catch (_error) {
+  } catch {
     return { isValid: false, error: 'Invalid balance format - must be valid integer strings' };
   }
 

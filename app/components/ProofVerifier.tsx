@@ -1,46 +1,56 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface ProofVerifierProps {
-  proof: any;
+  proof: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   publicSignals: string[];
-  onVerificationComplete: (verified: boolean) => void;
+  onVerificationComplete: (verified: boolean, error?: string) => void;
+  onVerificationStart?: () => void;
 }
 
-export function ProofVerifier({ proof, publicSignals, onVerificationComplete }: ProofVerifierProps) {
+export function ProofVerifier({ proof, publicSignals, onVerificationComplete, onVerificationStart }: ProofVerifierProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verified, setVerified] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const verifyProof = useCallback(async () => {
+    setIsVerifying(true);
+    setError(null);
+    onVerificationStart?.();
+    
+    try {
+      // Load SnarkJS dynamically to avoid SSR issues
+      const snarkjs = await import('snarkjs');
+      
+      // Load verification key
+      const vKeyResponse = await fetch('/circuits/build/verification_key.json');
+      if (!vKeyResponse.ok) {
+        throw new Error('Failed to load verification key');
+      }
+      const vKey = await vKeyResponse.json();
+      
+      // Verify the proof using SnarkJS
+      const isValid = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+      
+      setVerified(isValid);
+      onVerificationComplete(isValid);
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      console.error('Proof verification error:', err);
+      const errorMessage = `Proof verification failed: ${err.message}`;
+      setError(errorMessage);
+      setVerified(false);
+      onVerificationComplete(false, errorMessage);
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [proof, publicSignals, onVerificationComplete, onVerificationStart]);
 
   useEffect(() => {
     if (proof && publicSignals) {
       verifyProof();
     }
-  }, [proof, publicSignals]);
-
-  const verifyProof = async () => {
-    setIsVerifying(true);
-    setError(null);
-    
-    try {
-      // In a real implementation, this would load the verification key
-      // For demo purposes, we'll simulate verification
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate verification time
-      
-      // Mock verification - in production this would use actual SnarkJS verification
-      const isValid = proof && publicSignals && publicSignals.length > 0;
-      
-      setVerified(isValid);
-      onVerificationComplete(isValid);
-    } catch (err: any) {
-      setError(`Proof verification failed: ${err.message}`);
-      setVerified(false);
-      onVerificationComplete(false);
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  }, [proof, publicSignals, verifyProof]);
 
   if (!proof || !publicSignals) {
     return (

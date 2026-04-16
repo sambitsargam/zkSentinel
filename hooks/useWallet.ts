@@ -2,7 +2,7 @@
 
 import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
 import { metaMask } from 'wagmi/connectors';
-import { formatEther, parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { useState, useEffect } from 'react';
 
 export interface WalletState {

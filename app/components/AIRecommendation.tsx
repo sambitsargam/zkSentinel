@@ -16,124 +16,134 @@ export function AIRecommendation({ reasoning, action, isLoading = false }: AIRec
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">AI Security Analysis</h3>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm text-purple-600">Analyzing...</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800">AI Analysis</h3>
         </div>
-        
         <div className="space-y-3">
           <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
           <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
           <div className="h-4 bg-gray-200 rounded animate-pulse w-3/5"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!reasoning) {
-    return (
-      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-        <div className="text-center text-gray-500">
-          <svg className="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-          <p className="text-sm">No AI analysis available</p>
+          <div className="h-8 bg-gray-200 rounded animate-pulse mt-4"></div>
         </div>
       </div>
     );
   }
 
   const getActionIcon = (actionType: string) => {
-    if (actionType === 'swap') {
-      return (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      );
+    switch (actionType) {
+      case 'swap':
+        return (
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'none':
+      default:
+        return (
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        );
     }
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
   };
 
   const getActionColor = (actionType: string) => {
-    if (actionType === 'swap') {
-      return {
-        bg: 'bg-orange-50',
-        border: 'border-orange-200',
-        text: 'text-orange-800',
-        icon: 'text-orange-600',
-      };
+    switch (actionType) {
+      case 'swap':
+        return {
+          bg: 'bg-orange-50',
+          border: 'border-orange-200',
+          text: 'text-orange-800',
+          icon: 'text-orange-600',
+          badge: 'bg-orange-100 text-orange-800'
+        };
+      case 'none':
+      default:
+        return {
+          bg: 'bg-green-50',
+          border: 'border-green-200',
+          text: 'text-green-800',
+          icon: 'text-green-600',
+          badge: 'bg-green-100 text-green-800'
+        };
     }
-    return {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      text: 'text-green-800',
-      icon: 'text-green-600',
-    };
   };
 
-  const actionColors = getActionColor(action.type);
+  const colors = getActionColor(action.type);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        </div>
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800">AI Security Analysis</h3>
+        <div className="flex items-center space-x-2">
+          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <span className="text-sm text-green-600 font-medium">Complete</span>
+        </div>
       </div>
 
       {/* AI Reasoning */}
       <div className="mb-6">
-        <h4 className="font-medium text-gray-800 mb-2">Risk Assessment</h4>
+        <h4 className="font-medium text-gray-800 mb-2">Analysis</h4>
         <div className="bg-gray-50 rounded-md p-4">
           <p className="text-gray-700 leading-relaxed">{reasoning}</p>
         </div>
       </div>
 
-      {/* Recommended Action */}
-      <div className={`rounded-md p-4 border ${actionColors.border} ${actionColors.bg}`}>
+      {/* Action Recommendation */}
+      <div className={`rounded-lg p-4 border ${colors.border} ${colors.bg}`}>
         <div className="flex items-start space-x-3">
-          <div className={`flex-shrink-0 ${actionColors.icon}`}>
+          <div className={`flex-shrink-0 ${colors.icon}`}>
             {getActionIcon(action.type)}
           </div>
           <div className="flex-1">
-            <h4 className={`font-medium ${actionColors.text} mb-1`}>
-              {action.type === 'swap' ? 'Protective Action Recommended' : 'No Action Required'}
-            </h4>
+            <div className="flex items-center space-x-2 mb-2">
+              <h4 className={`font-medium ${colors.text}`}>
+                {action.type === 'swap' ? 'Protective Action Recommended' : 'No Action Required'}
+              </h4>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors.badge}`}>
+                {action.type === 'swap' ? 'SWAP' : 'SAFE'}
+              </span>
+            </div>
             
-            {action.type === 'swap' ? (
+            {action.type === 'swap' && (
               <div className="space-y-2">
-                <p className={`text-sm ${actionColors.text}`}>
-                  {action.reason || 'Swap recommended to reduce risk exposure'}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                  <div className="bg-white rounded-md p-3 border border-gray-200">
-                    <label className="text-xs font-medium text-gray-600">From Token</label>
-                    <p className="font-semibold text-gray-800">{action.fromToken}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">From:</span>
+                    <span className={`ml-2 font-medium ${colors.text}`}>
+                      {action.fromToken || 'ETH'}
+                    </span>
                   </div>
-                  <div className="bg-white rounded-md p-3 border border-gray-200">
-                    <label className="text-xs font-medium text-gray-600">To Token</label>
-                    <p className="font-semibold text-gray-800">{action.toToken}</p>
+                  <div>
+                    <span className="text-gray-600">To:</span>
+                    <span className={`ml-2 font-medium ${colors.text}`}>
+                      {action.toToken || 'USDC'}
+                    </span>
                   </div>
-                  <div className="bg-white rounded-md p-3 border border-gray-200">
-                    <label className="text-xs font-medium text-gray-600">Amount</label>
-                    <p className="font-semibold text-gray-800 text-sm">
-                      {action.amount ? `${(Number(action.amount) / 1e18).toFixed(4)}` : 'N/A'}
-                    </p>
+                  <div>
+                    <span className="text-gray-600">Amount:</span>
+                    <span className={`ml-2 font-medium ${colors.text}`}>
+                      {action.amount ? `${parseFloat(action.amount) / 1e18} ${action.fromToken || 'ETH'}` : 'Auto'}
+                    </span>
                   </div>
                 </div>
+                {action.reason && (
+                  <p className={`text-sm ${colors.text} mt-2`}>
+                    <span className="font-medium">Reason:</span> {action.reason}
+                  </p>
+                )}
               </div>
-            ) : (
-              <p className={`text-sm ${actionColors.text}`}>
-                Your current asset allocation is within acceptable risk parameters.
+            )}
+            
+            {action.type === 'none' && (
+              <p className={`text-sm ${colors.text}`}>
+                Your wallet allocation is well-balanced. Continue monitoring for changes.
               </p>
             )}
           </div>

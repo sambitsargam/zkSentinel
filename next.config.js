@@ -8,6 +8,18 @@ const nextConfig = {
       net: false,
       tls: false,
     };
+    
+    // Handle snarkjs for client-side usage
+    config.externals = config.externals || [];
+    if (config.isServer) {
+      // Allow snarkjs on server side
+    } else {
+      // Handle snarkjs on client side
+      config.resolve.alias = {
+        ...config.resolve.alias,
+      };
+    }
+    
     return config;
   },
 };

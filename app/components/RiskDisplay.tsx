@@ -4,9 +4,11 @@ interface RiskDisplayProps {
   riskScore: number;
   isVerified: boolean;
   isLoading?: boolean;
+  isVerifying?: boolean;
+  error?: string | null;
 }
 
-export function RiskDisplay({ riskScore, isVerified, isLoading = false }: RiskDisplayProps) {
+export function RiskDisplay({ riskScore, isVerified, isLoading = false, isVerifying = false, error = null }: RiskDisplayProps) {
   const getRiskLevel = (score: number) => {
     if (score <= 30) return { level: 'Low', color: 'green', bgColor: 'bg-green-50', textColor: 'text-green-800', borderColor: 'border-green-200' };
     if (score <= 60) return { level: 'Medium', color: 'yellow', bgColor: 'bg-yellow-50', textColor: 'text-yellow-800', borderColor: 'border-yellow-200' };
@@ -19,14 +21,17 @@ export function RiskDisplay({ riskScore, isVerified, isLoading = false }: RiskDi
     return '#EF4444'; // red-500
   };
 
-  if (isLoading) {
+  if (isLoading || isVerifying) {
+    const statusText = isLoading ? 'Analyzing...' : 'Verifying proof...';
+    const statusColor = isLoading ? 'text-blue-600' : 'text-purple-600';
+    
     return (
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Risk Analysis</h3>
           <div className="flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm text-blue-600">Analyzing...</span>
+            <span className={`text-sm ${statusColor}`}>{statusText}</span>
           </div>
         </div>
         <div className="space-y-3">
@@ -114,10 +119,26 @@ export function RiskDisplay({ riskScore, isVerified, isLoading = false }: RiskDi
 
         {/* Risk Level Description */}
         <div className="text-center text-sm text-gray-600">
-          {riskScore <= 30 && "Your wallet has a balanced allocation with low volatility exposure."}
-          {riskScore > 30 && riskScore <= 60 && "Your wallet has moderate risk with mixed asset allocation."}
-          {riskScore > 60 && "Your wallet has high volatility exposure that may require protective action."}
+          {riskScore <= 30 && "Your wallet has a balanced allocation with low volatility exposure. Stable assets dominate your portfolio."}
+          {riskScore > 30 && riskScore <= 60 && "Your wallet has moderate risk with mixed asset allocation. Consider monitoring volatile positions."}
+          {riskScore > 60 && "Your wallet has high volatility exposure that may require protective action. Consider rebalancing to stable assets."}
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div className="flex items-center space-x-2">
+              <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-sm text-red-700">{error}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

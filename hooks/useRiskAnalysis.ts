@@ -18,18 +18,27 @@ export interface RiskAnalysisResult {
 export interface RiskAnalysisState {
   result: RiskAnalysisResult | null;
   isLoading: boolean;
+  isVerifying: boolean;
   error: string | null;
+  verificationError: string | null;
 }
 
 export function useRiskAnalysis() {
   const [state, setState] = useState<RiskAnalysisState>({
     result: null,
     isLoading: false,
+    isVerifying: false,
     error: null,
+    verificationError: null,
   });
 
   const analyzeRisk = async (walletAddress: string, stableBalance: bigint, volatileBalance: bigint) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      error: null, 
+      verificationError: null 
+    }));
 
     try {
       const response = await fetch('/api/analyze', {
@@ -51,30 +60,42 @@ export function useRiskAnalysis() {
 
       const data = await response.json();
       
-      setState({
+      setState(prev => ({
+        ...prev,
         result: {
           ...data,
           verified: false, // Will be set by ProofVerifier component
         },
         isLoading: false,
         error: null,
-      });
+      }));
 
       return data;
     } catch (error: any) {
-      setState({
+      setState(prev => ({
+        ...prev,
         result: null,
         isLoading: false,
         error: error.message,
-      });
+      }));
       throw error;
     }
   };
 
-  const setVerified = (verified: boolean) => {
+  const setVerifying = (isVerifying: boolean) => {
+    setState(prev => ({
+      ...prev,
+      isVerifying,
+      verificationError: isVerifying ? null : prev.verificationError,
+    }));
+  };
+
+  const setVerified = (verified: boolean, error?: string) => {
     setState(prev => ({
       ...prev,
       result: prev.result ? { ...prev.result, verified } : null,
+      isVerifying: false,
+      verificationError: error || null,
     }));
   };
 
@@ -82,13 +103,16 @@ export function useRiskAnalysis() {
     setState({
       result: null,
       isLoading: false,
+      isVerifying: false,
       error: null,
+      verificationError: null,
     });
   };
 
   return {
     ...state,
     analyzeRisk,
+    setVerifying,
     setVerified,
     reset,
   };
